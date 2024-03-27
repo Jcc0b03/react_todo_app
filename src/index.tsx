@@ -63,8 +63,8 @@ const TodoEntity = ({Time, Task} : ToDoProp) => {
                 <p>{Time}</p>
                 <p className='text-2xl'>{Task}</p>
             </div>
-            <div id='completeButton-container' className='w-1/5 float-left h-full'>
-                <div id='completeButton' className='rounded-full flex justify-center items-center text-xl h-full'><DoneIcon className='fill-cyan-700 h-12 hover:fill-cyan-500'/></div>
+            <div id='completeButton-container' className='w-1/5 float-left h-full flex justify-end items-center'>
+                <DoneIcon className='fill-cyan-700 h-12 hover:fill-cyan-500'/>
             </div>
         </div>
     );

@@ -1,10 +1,12 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import DoneIcon from '-!svg-react-loader!./DoneIcon.svg';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import PlusIcon from '-!svg-react-loader!./PlusIcon.svg';
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import CloseIcon from '-!svg-react-loader!./CloseIcon.svg';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -36,7 +38,7 @@ const TodayInfo = () => {
         }
 
         fetchUnusualHoliday();
-    }, [])
+    }, [Today])
 
     return (
         <div className='flex ml-4 mt-6 flex-wrap'>
@@ -63,20 +65,26 @@ const TodoEntity = ({Time, Task} : ToDoProp) => {
                 <p>{Time}</p>
                 <p className='text-2xl'>{Task}</p>
             </div>
-            <div id='completeButton-container' className='w-1/5 float-left h-full flex justify-end items-center'>
-                <DoneIcon className='fill-cyan-700 h-12 hover:fill-cyan-500'/>
+            <div id='completeButton-container' className='w-1/5 float-left h-full flex items-center justify-end'>
+                <DoneIcon className='fill-cyan-700 h-12 hover:fill-cyan-500 w-12 mr-5 cursor-pointer transition'/>
             </div>
         </div>
     );
 }
 
-const todos = [
-    {time: "16:00", name: "Silłownia"},
-    {time: "20:00", name: "Spacer z psem"}
-];
+type Todo = {
+    time: string,
+    name: string,
+};
+
+export const Todos = React.createContext<Todo[]>([{time: "16:00", name: "Silłownia"},
+                                                                                  {time: "20:00", name: "Spacer z psem"}])
 
 const TasksForToday = () => {
-    return(
+
+    const todos = useContext(Todos);
+
+    return (
         <div className='mt-8'>
             <p className='ml-4 text-4xl'>Zadania na dzisiaj</p>
             <div id='toosList' className='flex w-full justify-center mt-8 flex-wrap'>
@@ -88,16 +96,63 @@ const TasksForToday = () => {
     );
 }
 
-const AddTaskButton = () => {
-    return (
-        <div className='absolute bottom-5 right-5 rounded-full w-20 h-20 bg-cyan-700 hover:bg-cyan-500 flex justify-center items-center'><PlusIcon className='fill-white h-1/2'/></div>
-    );
+const TaskInput = () => {
+
+    const [taskInputVisible, setTaskInputVisible] = useState<boolean>(true);
+
+    const disableTaskInput = (e : React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setTaskInputVisible(false);
+    }
+
+    const enableTaskInput = (e : React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setTaskInputVisible(true);
+    }
+
+    const AddTaskButton = () => {
+        return (
+            <div onClick={enableTaskInput} className='absolute bottom-5 right-5 rounded-full w-20 h-20 bg-cyan-700 hover:bg-cyan-500 flex justify-center items-center cursor-pointer transition'><PlusIcon className='fill-white h-1/2'/></div>
+        );
+    }
+
+    return(
+        <div>
+            <AddTaskButton/>
+            <div className={taskInputVisible ? 'absolute top-0 right-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 transition-all' : 'absolute top-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 -right-96 hidden transition-all'}>
+                <div className='flex items-center justify-stretch'>
+                    <p className='text-4xl mt-2 ml-2 float-left'>Dodaj zadanie</p>
+                    <div onClick={disableTaskInput} className='w-12 h-12 rounded-full bg-cyan-700 float-left mt-2 ml-auto mr-auto flex justify-center items-center hover:bg-cyan-500 transition cursor-pointer'>
+                        <CloseIcon className='fill-white w-3/4 h-3/4'/>
+                    </div>
+                </div>
+                <div className='w-full'>
+                    <div className='flex w-full justify-center flex-wrap mt-5'>
+                        <p className='w-full pl-10'>Nazwa zadania</p>
+                        <input type='text' className='border-2 border-cyan-700 rounded-xl w-3/4 text-xl'></input></div>
+                    <div className='flex w-full justify-center flex-wrap mt-2'>
+                        <p className='w-full pl-10'>Godzina</p>
+                        <input type='time' className='border-2 border-cyan-700 rounded-xl w-3/4 text-xl'></input>
+                    </div>
+                    <div className='w-full flex justify-center mt-5'>
+                        <div className='w-1/2 flex justify-center items-center bg-cyan-700 text-white pt-3 pb-3 rounded-full text-xl hover:bg-cyan-500 cursor-pointer transition'>Dodaj zadanie</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+const PlannerApp = () => {
+    return(
+        <React.StrictMode>
+            <TodayInfo/>
+            <TasksForToday/>
+            <TaskInput/>
+        </React.StrictMode>
+    )
 }
 
 root.render(
-  <React.StrictMode>
-      <TodayInfo/>
-      <TasksForToday/>
-      <AddTaskButton/>
-  </React.StrictMode>
+    <PlannerApp/>
 );

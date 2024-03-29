@@ -7,6 +7,8 @@ import DoneIcon from '-!svg-react-loader!./DoneIcon.svg';
 import PlusIcon from '-!svg-react-loader!./PlusIcon.svg';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import CloseIcon from '-!svg-react-loader!./CloseIcon.svg';
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import SyncIcon from '-!svg-react-loader!./SyncIcon.svg';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -147,14 +149,30 @@ const PlannerApp = () => {
 
             const setSyncInputActive = () => {
                 if(!syncInputState) {
-                    return setSyncInput(true);
+                    setSyncInput(true);
                 }
+            }
 
+            const setSyncInputNotActive = () => {
                 setSyncInput(false);
+                console.log(syncInputState);
             }
 
             return(
-                <div onClick={setSyncInputActive} className={syncInputState ? 'absolute right-5 bottom-32 bg-cyan-700 w-20 h-20 rounded-full transition-all' : 'absolute right-5 bottom-32 bg-cyan-700 w-72 h-20 rounded-full transition-all'}>sync</div>
+                <div onClick={setSyncInputActive} className={!syncInputState ? 'absolute right-5 bottom-32 bg-cyan-700 w-20 h-20 rounded-full transition-all flex justify-center items-center cursor-pointer' : 'absolute right-5 bottom-32 bg-cyan-700 w-72 rounded-2xl transition-all'}>
+                    <SyncIcon className={!syncInputState ? 'w-3/4 h-3/4 fill-white' : 'hidden'}/>
+                    <div className={syncInputState ? 'w-3/4 h-14 bg-cyan-500 flex justify-center items-center mr-auto ml-auto rounded-full mt-5 cursor-pointer' : 'hidden'}>
+                        Wygeneruj kod
+                    </div>
+
+                    <div className={syncInputState ? 'w-3/4 h-14 mt-5 mr-auto ml-auto mb-5' : 'hidden'}>
+                        <input type='text' placeholder='Wpisz kod' className='w-full h-full rounded-full pl-2'></input>
+                    </div>
+
+                    <div onClick={setSyncInputNotActive} className={syncInputState ? 'w-14 h-14 bg-cyan-500 rounded-full mb-5 ml-auto mr-auto flex justify-center items-center cursor-pointer' : 'hidden'}>
+                        <CloseIcon onClick={setSyncInputNotActive} className='w-3/4 h-3/4 fill-white'/>
+                    </div>
+                </div>
             )
         }
 
@@ -162,14 +180,14 @@ const PlannerApp = () => {
             <div>
                 <AddTaskButton/>
                 <SyncButton/>
-                <div className={taskInputVisible ? 'absolute top-0 right-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 transition-all' : 'absolute top-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 -right-96 hidden transition-all'}>
-                    <div className='flex items-center justify-stretch'>
+                <div className={taskInputVisible ? 'absolute top-0 right-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 transition-all' : 'absolute top-0 w-0 h-screen z-10 bg-white -right-96 border-cyan-700 transition-all'}>
+                    <div className={taskInputVisible ? 'flex items-center justify-stretch' : 'hidden'}>
                         <p className='text-4xl mt-2 ml-2 float-left'>Dodaj zadanie</p>
                         <div onClick={disableTaskInput} className='w-12 h-12 rounded-full bg-cyan-700 float-left mt-2 ml-auto mr-auto flex justify-center items-center hover:bg-cyan-500 transition cursor-pointer'>
                             <CloseIcon className='fill-white w-3/4 h-3/4'/>
                         </div>
                     </div>
-                    <div className='w-full'>
+                    <div className={taskInputVisible ? 'w-full' : 'hidden'}>
                         <div className='flex w-full justify-center flex-wrap mt-5'>
                             <p className='w-full pl-10'>Nazwa zadania</p>
                             <input type='text' className='border-2 border-cyan-700 rounded-xl w-3/4 text-xl' onInput={handleNameInput}></input></div>

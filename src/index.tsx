@@ -56,6 +56,15 @@ const PlannerApp = () => {
     }
 
     const TodoEntity = ({time, name} : Todo, key : number) => {
+
+        const removeTodo = () => {
+            if(todos.length > 1) {
+                setTodos(todos.splice(key, 1));
+            }else{
+                setTodos([]);
+            }
+        }
+
         return(
             <div key={key} className='w-10/12 shadow-xl pl-3.5 pb-3 pt-3 rounded-3xl border-2 border-cyan-700 hover:scale-110 transition mb-5'>
                 <div id='taskInfoContainer' className='w-4/5 float-left mt-auto mb-auto'>
@@ -63,7 +72,7 @@ const PlannerApp = () => {
                     <p className='text-2xl'>{name}</p>
                 </div>
                 <div id='completeButton-container' className='w-1/5 float-left h-full flex items-center justify-end'>
-                    <DoneIcon className='fill-cyan-700 h-12 hover:fill-cyan-500 w-12 mr-5 cursor-pointer transition'/>
+                    <DoneIcon className='fill-cyan-700 h-12 hover:fill-cyan-500 w-12 mr-5 cursor-pointer transition' onClick={removeTodo}/>
                 </div>
             </div>
         );
@@ -74,8 +83,7 @@ const PlannerApp = () => {
         name: string,
     };
 
-     const [todos, setTodos] = useState<Todo[]>([{time: "16:00", name: "Silłownia"},
-        {time: "20:00", name: "Spacer z psem"}])
+     const [todos, setTodos] = useState<Todo[]>([]);
 
     const TasksForToday = () => {
 
@@ -123,15 +131,37 @@ const PlannerApp = () => {
             newTodo.time = (e.target as HTMLInputElement).value;
         }
 
+        const validateTime = (time: string)  => {
+            const timeRegex = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+            return timeRegex.test(time);
+        }
+
         const addTodo = () => {
-            if(newTodo.time !== "" && newTodo.name !== ""){
+            if(validateTime(newTodo.time) && newTodo.name !== ""){
                 setTodos(prevTodos => [...prevTodos, newTodo]);
             }
+        }
+
+        const SyncButton = () => {
+            const [syncInputState, setSyncInput] = useState(false);
+
+            const setSyncInputActive = () => {
+                if(!syncInputState) {
+                    return setSyncInput(true);
+                }
+
+                setSyncInput(false);
+            }
+
+            return(
+                <div onClick={setSyncInputActive} className={syncInputState ? 'absolute right-5 bottom-32 bg-cyan-700 w-20 h-20 rounded-full transition-all' : 'absolute right-5 bottom-32 bg-cyan-700 w-72 h-20 rounded-full transition-all'}>sync</div>
+            )
         }
 
         return(
             <div>
                 <AddTaskButton/>
+                <SyncButton/>
                 <div className={taskInputVisible ? 'absolute top-0 right-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 transition-all' : 'absolute top-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 -right-96 hidden transition-all'}>
                     <div className='flex items-center justify-stretch'>
                         <p className='text-4xl mt-2 ml-2 float-left'>Dodaj zadanie</p>

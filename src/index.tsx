@@ -44,15 +44,20 @@ const PlannerApp = () => {
         }, [Today])
 
         return (
-            <div className='flex ml-4 mt-6 flex-wrap'>
-                <div id='first-row' className='flex w-full'>
-                    <p id='day' className='text-6xl mr-3'>{days[Today.getDay()-1]}</p>
-                    <p id='dayNum' className='text-6xl mr-3'>{Today.getDate()}</p>
-                    <p id='monthName' className='text-6xl mr-3'>{months[Today.getMonth()]}</p>
+            <div className='flex w-screen justify-between flex-wrap'>
+                <div className='flex ml-4 mt-6 flex-wrap'>
+                    <div id='first-row' className='flex w-full'>
+                        <p id='day' className='text-6xl mr-3'>{days[Today.getDay()-1]}</p>
+                        <p id='dayNum' className='text-6xl mr-3'>{Today.getDate()}</p>
+                        <p id='monthName' className='text-6xl mr-3'>{months[Today.getMonth()]}</p>
+                    </div>
+                    <div id='second-row'>
+                        <p id='unusualHoliday' className='text-xl'>{unusualHoliday}</p>
+                    </div>
                 </div>
-                <div id='second-row'>
-                    <p id='unusualHoliday' className='text-xl'>{unusualHoliday}</p>
-                </div>
+                <a className='md:mt-auto mb-auto' href=''>
+                    <div className='h-12 rounded-full bg-cyan-700 flex justify-center items-center pl-5 pr-5 text-white cursor-pointer hover:scale-110 hover:bg-cyan-500 transition-all md:mr-5 ml-4 md:ml-0 mt-6'>O aplikacji</div>
+                </a>
             </div>
         )
     }
@@ -60,11 +65,15 @@ const PlannerApp = () => {
     const TodoEntity = ({time, name} : Todo, key : number) => {
 
         const removeTodo = () => {
-            if(todos.length > 1) {
-                setTodos(todos.splice(key, 1));
-            }else{
-                setTodos([]);
-            }
+            const newTodos : Todo[] = [];
+
+            todos.forEach((todo, index) => {
+                if(index !== key){
+                    newTodos.push(todo);
+                }
+
+                setTodos(newTodos);
+            })
         }
 
         return(
@@ -92,7 +101,7 @@ const PlannerApp = () => {
         return (
             <div className='mt-8'>
                 <p className='ml-4 text-4xl'>Zadania na dzisiaj</p>
-                <div id='toosList' className='flex w-full justify-center mt-8 flex-wrap'>
+                <div id='toosList' className='flex w-full justify-center mt-8 flex-wrap mb-56'>
                     {todos.map((todo, key) => {
                         return TodoEntity({time: todo.time, name: todo.name}, key);
                     })}
@@ -117,7 +126,7 @@ const PlannerApp = () => {
 
         const AddTaskButton = () => {
             return (
-                <div onClick={enableTaskInput} className='absolute bottom-5 right-5 rounded-full w-20 h-20 bg-cyan-700 hover:bg-cyan-500 flex justify-center items-center cursor-pointer transition'><PlusIcon className='fill-white h-1/2'/></div>
+                <div onClick={enableTaskInput} className='fixed bottom-5 right-5 rounded-full w-20 h-20 bg-cyan-700 hover:bg-cyan-500 flex justify-center items-center cursor-pointer transition'><PlusIcon className='fill-white h-1/2'/></div>
             );
         }
 
@@ -158,29 +167,105 @@ const PlannerApp = () => {
                 console.log(syncInputState);
             }
 
+            const setSyncTokenFromInput = (e : React.FormEvent<HTMLInputElement>) => {
+                e.preventDefault();
+                setSyncToken((e.target as HTMLInputElement).value);
+            }
+
+            const handleSync = () => {
+                const backendAddress = '127.0.0.1:8080'
+                const https = false;
+
+                if(syncToken!=='' && todos.length !== 0){
+                    const dataToSend : string = JSON.stringify({
+                        syncToken: syncToken,
+                        todos: todos
+                    })
+
+                    console.log(dataToSend)
+
+                    try {
+                        fetch(`${https ? 'https' : 'http'}://${backendAddress}/uploadTodos`, {
+                            method: 'post',
+                            headers: {'content-type': 'application/json'},
+                            body: dataToSend
+                        });
+                    }catch(err){
+                        if(err){
+                            console.log("an error occured while sending data");
+                        }
+                    }
+                }else if(syncToken!=='' && todos.length===0) {
+                    const fetchTodos = async () => {
+                        const data = await fetch(`${https ? 'https' : 'http'}://${backendAddress}/getTodos?syncToken=${syncToken}`,
+                            {method: 'post'});
+                        const dataJson = await data.json();
+                        setTodos(dataJson);
+                    }
+
+                    fetchTodos();
+                }
+            }
+
+            const [syncToken, setSyncToken] = useState<string>('');
+
+            const handleGettingToken = () => {
+                const getToken = async () => {
+                    try {
+                        const data = await fetch(
+                            "http://127.0.0.1:8080/generateToken",
+                            {method: 'post'});
+
+                        if (!data.ok) {
+                            return console.log("error while fetching data");
+                        }
+
+                        const dataJson = await data.json();
+                        setSyncToken(dataJson.syncToken);
+                    }catch(err){
+                        if(err){
+                            console.log(`error while getting token ${err}`);
+                        }
+                    }
+                }
+
+                if(syncToken==='') {
+                    getToken();
+                }
+            }
+
             return(
-                <div onClick={setSyncInputActive} className={!syncInputState ? 'absolute right-5 bottom-32 bg-cyan-700 w-20 h-20 rounded-full transition-all flex justify-center items-center cursor-pointer' : 'absolute right-5 bottom-32 bg-cyan-700 w-72 rounded-2xl transition-all'}>
+                <div onClick={setSyncInputActive}
+                     className={!syncInputState ? 'fixed right-5 bottom-32 bg-cyan-700 w-20 h-20 rounded-full transition-all flex justify-center items-center cursor-pointer hover:bg-cyan-500' : 'absolute right-5 bottom-32 bg-cyan-700 w-72 rounded-2xl transition-all'}>
                     <SyncIcon className={!syncInputState ? 'w-3/4 h-3/4 fill-white' : 'hidden'}/>
-                    <div className={syncInputState ? 'w-3/4 h-14 bg-cyan-500 flex justify-center items-center mr-auto ml-auto rounded-full mt-5 cursor-pointer' : 'hidden'}>
-                        Wygeneruj kod
+                    <div onClick={handleGettingToken}
+                        className={syncInputState ? 'w-3/4 h-14 bg-cyan-500 flex justify-center items-center mr-auto ml-auto rounded-full mt-5 cursor-pointer hover:bg-cyan-300 transition' : 'hidden'}>
+                        {syncToken==='' ? 'Wygeneruj kod' : syncToken}
                     </div>
 
                     <div className={syncInputState ? 'w-3/4 h-14 mt-5 mr-auto ml-auto mb-5' : 'hidden'}>
-                        <input type='text' placeholder='Wpisz kod' className='w-full h-full rounded-full pl-2'></input>
+                        <input onInput={setSyncTokenFromInput} type='text' placeholder='Wpisz kod' className='w-full h-full rounded-full pl-2'></input>
                     </div>
-
-                    <div onClick={setSyncInputNotActive} className={syncInputState ? 'w-14 h-14 bg-cyan-500 rounded-full mb-5 ml-auto mr-auto flex justify-center items-center cursor-pointer' : 'hidden'}>
-                        <CloseIcon onClick={setSyncInputNotActive} className='w-3/4 h-3/4 fill-white'/>
+                    <div className={syncInputState ? 'flex w-1/2 justify-between mr-auto ml-auto': 'hidden'}>
+                        <div onClick={setSyncInputNotActive}
+                             className={syncInputState ? 'w-14 h-14 bg-cyan-500 rounded-full mb-5 ml-1 flex justify-center items-center cursor-pointer hover:bg-cyan-300' : 'hidden'}>
+                            <CloseIcon onClick={setSyncInputNotActive} className='w-3/4 h-3/4 fill-white'/>
+                        </div>
+                        <div onClick={setSyncInputNotActive}
+                             className={syncInputState ? 'w-14 h-14 bg-white rounded-full mb-5 flex justify-center items-center cursor-pointer' : 'hidden'}>
+                            <DoneIcon onClick={handleSync} className='w-full h-full fill-cyan-500 hover:fill-cyan-300'/>
+                        </div>
                     </div>
                 </div>
             )
         }
 
-        return(
+        return (
             <div>
                 <AddTaskButton/>
                 <SyncButton/>
-                <div className={taskInputVisible ? 'absolute top-0 right-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 transition-all' : 'absolute top-0 w-0 h-screen z-10 bg-white -right-96 border-cyan-700 transition-all'}>
+                <div
+                    className={taskInputVisible ? 'absolute top-0 right-0 w-80 h-screen z-10 bg-white shadow-2xl border-l-2 border-cyan-700 transition-all' : 'absolute top-0 w-0 h-screen z-10 bg-white -right-96 border-cyan-700 transition-all'}>
                     <div className={taskInputVisible ? 'flex items-center justify-stretch' : 'hidden'}>
                         <p className='text-4xl mt-2 ml-2 float-left'>Dodaj zadanie</p>
                         <div onClick={disableTaskInput} className='w-12 h-12 rounded-full bg-cyan-700 float-left mt-2 ml-auto mr-auto flex justify-center items-center hover:bg-cyan-500 transition cursor-pointer'>

@@ -57,7 +57,7 @@ const PlannerApp = () => {
                         <p id='unusualHoliday' className='text-xl'>{unusualHoliday}</p>
                     </div>
                 </div>
-                <a className='md:mt-auto mb-auto' href=''>
+                <a className='md:mt-auto mb-auto' target='_blank' href='https://github.com/Jcc0b03/react_todo_app'>
                     <div className='h-12 rounded-full bg-cyan-700 flex justify-center items-center pl-5 pr-5 text-white cursor-pointer hover:scale-110 hover:bg-cyan-500 transition-all md:mr-5 ml-4 md:ml-0 mt-6'>O aplikacji</div>
                 </a>
             </div>

@@ -8,7 +8,7 @@ This project was created in few days to showcase my React skills, I was trying t
 
 I`ve used TypeScript because it's build on top of JavaScript so if I know typescript I also know JavaScript.
 
-I`ve implemented simple todos sync system, with backend written in Node.js([link to backend repo])
+I`ve implemented simple todos sync system, with backend written in Node.js([https://github.com/Jcc0b03/react_todo_app_backend])
 
 How to use sync system?
 1. click on "cloud sync icon"

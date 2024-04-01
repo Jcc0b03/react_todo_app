@@ -10,6 +10,8 @@ import CloseIcon from '-!svg-react-loader!./CloseIcon.svg';
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import SyncIcon from '-!svg-react-loader!./SyncIcon.svg';
 
+const backendAddress = 'api.todos.jakubwierzchowski.tech'
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -173,7 +175,6 @@ const PlannerApp = () => {
             }
 
             const handleSync = () => {
-                const backendAddress = '127.0.0.1:8080'
                 const https = false;
 
                 if(syncToken!=='' && todos.length !== 0){
@@ -213,7 +214,7 @@ const PlannerApp = () => {
                 const getToken = async () => {
                     try {
                         const data = await fetch(
-                            "http://127.0.0.1:8080/generateToken",
+                            `http://${backendAddress}/generateToken`,
                             {method: 'post'});
 
                         if (!data.ok) {
